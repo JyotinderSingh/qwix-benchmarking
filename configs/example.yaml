@@ -1,0 +1,55 @@
+# Example benchmark configuration (PTQ).
+#
+# Usage:
+#   python run_benchmark.py configs/example.yaml -v
+#
+# `maxtext_args` are forwarded verbatim to MaxText's pyconfig.initialize().
+# They must include a base config path and any overrides you need.
+
+model_name: "llama3-8b"
+
+maxtext_args:
+  - "MaxText/configs/base.yml"
+  - "model_name=llama3-8b"
+  - "load_parameters_path=/path/to/checkpoint"
+  - "per_device_batch_size=1"
+  - "max_target_length=512"
+  - "use_qwix_quantization=false"
+
+# Quantization recipes to benchmark against the unquantized baseline.
+# See configs/awq_example.yaml and configs/gptq_example.yaml for AWQ / GPTQ.
+quantizations:
+  - name: "int8_ptq"
+    provider: "ptq"
+    weight_qtype: "int8"
+    module_path: ".*"
+
+  - name: "int4_ptq"
+    provider: "ptq"
+    weight_qtype: "int4"
+    module_path: ".*"
+
+# Which metrics to collect.
+run_accuracy: true
+run_model_size: true
+run_memory: true
+run_throughput: true
+run_latency: true
+
+# Accuracy evaluation tokens (replace with real token ids from your dataset).
+# Each inner list is one sequence of token ids.
+eval_tokens:
+  - [1, 1234, 5678, 91011, 2, 0, 0, 0]
+  - [1, 4321, 8765, 11109, 2, 0, 0, 0]
+
+eval_seq_len: 512
+
+# Throughput / latency settings.
+warmup_steps: 3
+bench_steps: 10
+batch_size: 1
+
+# Optional outputs (also overridable via --output / --markdown / --csv).
+# output_file: "results.json"
+# output_markdown: "results.md"
+# output_csv: "results.csv"

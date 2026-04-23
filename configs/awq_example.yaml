@@ -1,0 +1,46 @@
+# AWQ (Activation-aware Weight Quantization) benchmark example.
+#
+# Usage:
+#   python run_benchmark.py configs/awq_example.yaml -v
+
+model_name: "gemma-2b"
+
+maxtext_args:
+  - "MaxText/configs/base.yml"
+  - "model_name=gemma-2b"
+  - "load_parameters_path=/path/to/gemma-2b-checkpoint"
+  - "per_device_batch_size=1"
+  - "max_target_length=512"
+  - "use_qwix_quantization=false"
+
+quantizations:
+  - name: "awq_int8"
+    provider: "awq"
+    weight_qtype: "int8"
+    module_path: "decoder/.*layers.*"
+    calibration_batches: 8
+    n_grid: 20
+    rng_seed: 456
+
+  - name: "awq_int4_g128"
+    provider: "awq"
+    weight_qtype: "int4"
+    module_path: "decoder/.*layers.*"
+    tile_size: 128
+    calibration_batches: 8
+    n_grid: 20
+    rng_seed: 456
+
+run_accuracy: true
+run_model_size: true
+run_memory: true
+run_throughput: true
+run_latency: true
+
+eval_seq_len: 512
+warmup_steps: 3
+bench_steps: 10
+batch_size: 1
+
+# output_file: "results_awq.json"
+# output_markdown: "results_awq.md"
